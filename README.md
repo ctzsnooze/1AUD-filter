@@ -1,12 +1,15 @@
 This is a page describing the 1AUD filter, a modification of the 1EURO filter
 
-The 1EURO filter increases the cutoff frequency of the filter during rapid input movements.
+The 1EURO filter increases the cutoff frequency of a first order filter during rapid input movements.
 
-This filter uses the same principle but has some modifications that appear to improve performance in certain applications, such as tracking a gimbal.
+This filter uses the same principle but has some modifications that appear to improve performance in certain applications, such as tracking a gimbal.  I recommend using two first order lowpass filters in series to get a simple second order filter, not only for smoothing the input but also for smoothing the output.
 
-In principle, the user determines a minimum cutoff frequency for the smoothing function, and a gain factor for how quickly the cutoff should rise during fast movement.  The differential factor then shifts the cutoff upwards during faster movements.  
+The user must set the:
+- cutoff frequency for input smoothing, so as to get a clean enough derivative control signal
+- the minimum cutoff frequency for the smoothing function
+- the gain factor for how quickly the cutoff should rise during fast movement.  
 
-In more detail, the code:
+The code typically:
 
 - (optionally) applies a slew limiter to remove extreme solitary spikes
 - applies a second order lowpass filter to smooth the data / suppress high frequency noise
@@ -48,3 +51,9 @@ prevOneEuroOut = oneEuroOut
 oneAUD = prevOneAUD + kCutoff * (oneEuroOut - prevOneAUD)
 output = one AUD
 ```
+
+I apologise if someone else has described this before me.
+
+The amount of input smoothing for the derivative calculation sets the delay time for changes in cutoff frequency.  
+
+With the correct configuration, the performance can be very good.  
