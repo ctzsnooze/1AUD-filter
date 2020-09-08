@@ -1,59 +1,88 @@
-This is a page describing the 1AUD filter, a modification of the 1EURO filter
+## This is a page describing the 1AUD filter, a modification of the [1Euro](http://cristal.univ-lille.fr/~casiez/1euro/) filter
 
-The 1EURO filter increases the cutoff frequency of a first order filter during rapid input movements.
+This software is released under the MIT license; Copyright 2020 C Thompson, J Kingdon.
 
-This filter uses the same principle but has some modifications that appear to improve performance in certain applications, such as tracking a gimbal.  I recommend using two first order lowpass filters in series to get a simple second order filter, not only for smoothing the input but also for smoothing the output.
+## Introduction
 
-The user must set the:
-- cutoff frequency for input smoothing, so as to get a clean enough derivative control signal
-- the minimum cutoff frequency for the smoothing function
-- the gain factor for how quickly the cutoff should rise during fast movement.  
+The 1Euro filter increases the cutoff frequency of a first order filter during rapid input movements.  The input is smoothed with a low frequency first order filter (1hz in most examples) before its derivative is used to modulate the cutoff frequency.
 
-The code typically:
+This filter uses the same principle with some modifications that appear to improve performance in certain applications, such as tracking the movement of a gimbal.
 
-- (optionally) applies a slew limiter to remove extreme solitary spikes
-- applies a second order lowpass filter to smooth the data / suppress high frequency noise
-- calculates the derivative of that smoothed input signal
-- shifts the minCutoff value upwards as derivative increases
-- calculates the lowpass constant k for the final smoothing function
-- constrains k to limit the maximum cutoff frequency
-- applies a (first order) lowpass with this variable k factor over the (slew limited) input data
+### Changes from the 1Euro
 
-The max frequency can be set using an appropriate maximum k value. 
+- Adding a slew limiting function to remove random spikes (optional, but useful)
+- Using a second order filter before taking the derivative, to better smooth the derivative (and the output) with improved delay in responding to movement. 
+- Using a second order filter on the output to gain better output smoothing
 
-In pseudocode:
+## Sample code
+
+Here is an example of [how this filter can be coded](https://github.com/ctzsnooze/1AUD-filter/tree/master/1AUD).
+
+![Gimbal smoothing example](https://github.com/ctzsnooze/1AUD-filter/blob/master/images/AUD_Filter_GimbalSmoothing.jpg "Gimbal smoothing example, longer min time constant")
+
+![Gimbal smoothing example](https://github.com/ctzsnooze/1AUD-filter/blob/master/images/AUD_Filter_on_GimbalData.jpg "Gimbal smoothing example, shorter min time constant")
+
+![Gimbal smoothing example](https://github.com/ctzsnooze/1AUD-filter/blob/master/images/AUDFilter_GimbalSmoothingLong.jpg "Gimbal smoothing example, showing faster cutoff and less delay during faster movements.")
+
+## Tuning:
+
+### The user must set:
+- the input cutoff frequency for smoothing before differentiation, to get a clean enough derivative control signal.  
+- minimum and maximum cutoff frequencies for the smoothing function
+- the 'beta' or gain factor for how quickly the cutoff should rise during fast movement.  
+
+Stronger input smoothing will lead to a smoother derivative and less output jitter, at the cost of greater delay in changing output cutoff frequency.  
+
+## Code basics:
+- (optionally) apply a slew limiter to remove extreme solitary spikes
+- apply a second order lowpass filter to smooth the data / suppress high frequency noise
+- calculate the derivative of that smoothed input signal
+- shift the minCutoff value upwards towards a maximum as derivative increases
+- calculate the lowpass constant k for the final smoothing function
+- constrain k to 1 or to the value that limits the maximum cutoff frequency
+- apply a (first or second order) lowpass with this variable k factor over the (slew limited) input data
+
+### In pseudocode:
 
 ```
   ## Calculate lowpass k value
-kInput = 2*PI*inputCutoff/sampleRate
+kInput = 2*PI*inputCutoff/sampleRate;
+
  ## (optional) slew limit input steps to 20 max
-slewedInput = slew(input)
+slewedInput = slewLimit(input);
+
  ## First order PT1 that slewed input
-smoothedSlewedInput = prevSlewedInput + kInput * (slewedInput - prevSlewedInput)
-prevSlewedInput = smoothedSlewedInput
+smoothedSlewedInput = prevSlewedInput + kInput * (slewedInput - prevSlewedInput);
+prevSlewedInput = smoothedSlewedInput;
+
  ## Repeat to get second order smoothing
-verySmoothedSlewedInput = prevVerySmoothedSlewedInput + kInput * (smoothedSlewedInput - prevVerySmoothedSlewedInput)
-prevVerySmoothedSlewedInput = verySmoothedSlewedInput
-## 1Euro code:
+verySmoothedSlewedInput = prevVerySmoothedSlewedInput + kInput * (smoothedSlewedInput - prevVerySmoothedSlewedInput);
+prevVerySmoothedSlewedInput = verySmoothedSlewedInput;
+
   ## get differential of very smoothed slewed input
-dx = (verySmoothedSlewedInput-prevVerySmoothedSlewedInput) * sample rate
+dx = (verySmoothedSlewedInput-prevVerySmoothedSlewedInput) * sample rate;
+
   ## adjust cutoff upwards using dx and Beta
-cutoff = minCutoff + Beta * ABS(dx)
+cutoff = minCutoff + Beta * ABS(dx);
+
+  ## limit the highest possible cutoff frequency to the user-configured maximum
+cutoff = min(cutoff, maxCutoff);
+
   ## get the k value for the cutoff 
 kCutoff = 2*PI*cutoff/sampleRate
+
   ## limit kCutoff to a value that sets the upper limit of the cutoff
-  ## kCutoff must not exceed 1
-kCutoff = MAX (kCutoff, 1)
+  ## NB: kCutoff must not exceed 1; at one, there is no filtering
+kCutoff = MAX (kCutoff, 1);
+
   ## use kCutoff to filter the slewed input 
-oneEuroOut = prevOneEuroOut + kCutoff * (slewedInput - prevOneEuroOut)
-prevOneEuroOut = oneEuroOut
+oneAudOut = prevOneAudOut + kCutoff * (slewedInput - prevOneAudOut)
+prevOneAudOut = oneAudOut;
+
   ## for second order / smoother filtering
-oneAUD = prevOneAUD + kCutoff * (oneEuroOut - prevOneAUD)
-output = one AUD
+oneAudOut = prevOneAudOut + kCutoff * (oneAudOut - prevOneAudOut);
+output = oneAudOut;
 ```
 
-I apologise if someone else has described this before me.
+I apologise if someone else has described this approach before.
 
-The amount of input smoothing for the derivative calculation sets the delay time for changes in cutoff frequency.  
-
-With the correct configuration, the performance can be very good.  
