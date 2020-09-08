@@ -20,11 +20,9 @@ Here is an example of [how this filter can be coded](https://github.com/ctzsnooz
 
 ## Sample results
 
-![Gimbal smoothing example](https://github.com/ctzsnooze/1AUD-filter/blob/master/images/AUD_Filter_GimbalSmoothing.jpg "Gimbal smoothing example, longer min time constant")
+![Gimbal smoothing example](https://github.com/ctzsnooze/1AUD-filter/blob/master/images/AUD_Filter_GimbalSmoothing.jpg "Gimbal smoothing example")
 
-![Gimbal smoothing example](https://github.com/ctzsnooze/1AUD-filter/blob/master/images/AUD_Filter_on_GimbalData.jpg "Gimbal smoothing example, shorter min time constant")
-
-![Gimbal smoothing example](https://github.com/ctzsnooze/1AUD-filter/blob/master/images/AUDFilter_GimbalSmoothingLong.jpg "Gimbal smoothing example, showing faster cutoff and less delay during faster movements.")
+![Gimbal smoothing example, longer time frame](https://github.com/ctzsnooze/1AUD-filter/blob/master/images/AUDFilter_GimbalSmoothingLong.jpg "Gimbal smoothing example, showing faster cutoff and less delay during faster movements.")
 
 ## Tuning:
 
