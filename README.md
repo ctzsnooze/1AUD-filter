@@ -1,4 +1,4 @@
-## This is a page describing the 1AUD filter, a modification of the [1Euro](http://cristal.univ-lille.fr/~casiez/1euro/) filter
+## The 1AUD filter, a modification of the [1Euro](http://cristal.univ-lille.fr/~casiez/1euro/) filter
 
 This software is released under the MIT license; Copyright 2020 C Thompson, J Kingdon.
 
@@ -18,6 +18,8 @@ This filter uses the same principle with some modifications that appear to impro
 
 Here is an example of [how this filter can be coded](https://github.com/ctzsnooze/1AUD-filter/tree/master/1AUD).
 
+## Sample results
+
 ![Gimbal smoothing example](https://github.com/ctzsnooze/1AUD-filter/blob/master/images/AUD_Filter_GimbalSmoothing.jpg "Gimbal smoothing example, longer min time constant")
 
 ![Gimbal smoothing example](https://github.com/ctzsnooze/1AUD-filter/blob/master/images/AUD_Filter_on_GimbalData.jpg "Gimbal smoothing example, shorter min time constant")
@@ -26,7 +28,7 @@ Here is an example of [how this filter can be coded](https://github.com/ctzsnooz
 
 ## Tuning:
 
-### The user must set:
+The user must set:
 - the input cutoff frequency for smoothing before differentiation, to get a clean enough derivative control signal.  
 - minimum and maximum cutoff frequencies for the smoothing function
 - the 'beta' or gain factor for how quickly the cutoff should rise during fast movement.  
@@ -42,7 +44,7 @@ Stronger input smoothing will lead to a smoother derivative and less output jitt
 - constrain k to 1 or to the value that limits the maximum cutoff frequency
 - apply a (first or second order) lowpass with this variable k factor over the (slew limited) input data
 
-### In pseudocode:
+In pseudocode:
 
 ```
   ## Calculate lowpass k value
@@ -81,6 +83,7 @@ prevOneAudOut = oneAudOut;
 
   ## for second order / smoother filtering
 oneAudOut = prevOneAudOut + kCutoff * (oneAudOut - prevOneAudOut);
+prevOneAudOut = oneAudOut;
 output = oneAudOut;
 ```
 
