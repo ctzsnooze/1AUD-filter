@@ -85,5 +85,5 @@ prevOneAudOut = oneAudOut;
 output = oneAudOut;
 ```
 
-I apologise if someone else has described this approach before.
+I can't give enough thanks to James Kingdom for his enthusiastic encouragement, advice and programming skills, without which we wouldn't have ended up with such a great result.
 
